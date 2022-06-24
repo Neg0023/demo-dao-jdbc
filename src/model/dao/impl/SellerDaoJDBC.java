@@ -85,7 +85,42 @@ public class SellerDaoJDBC implements SellerDao {
 
     @Override
     public List<Seller> findAll() {
-        return null;
+        PreparedStatement st = null;
+        ResultSet rs = null;
+
+        try {
+            st = connection.prepareStatement(
+                    "SELECT seller.*,department.Name as DepName "
+                            + "FROM seller INNER JOIN department "
+                            + "ON seller.DepartmentId = department.Id "
+                            + "ORDER BY Name");
+
+
+            rs = st.executeQuery();
+
+            List<Seller> list = new ArrayList<>();
+            Map<Integer, Department> map = new HashMap<>();
+
+            while (rs.next()) {
+                Department department = map.get(rs.getInt("DepartmentId"));
+
+                if (department == null) {
+                    department = isntantiateDepartment(rs);
+                    map.put(rs.getInt("DepartmentId"), department);
+                }
+
+                Seller obj = instatiateSeller(rs, department);
+                list.add(obj);
+            }
+
+            return list;
+
+        } catch (SQLException e) {
+            throw new DbException(e.getMessage());
+        }finally {
+            DB.closeStatement(st);
+            DB.closeResultSet(rs);
+        }
     }
 
     @Override
@@ -109,14 +144,15 @@ public class SellerDaoJDBC implements SellerDao {
             Map<Integer, Department> map = new HashMap<>();
 
             while (rs.next()) {
+
                 Department dep = map.get(rs.getInt("DepartmentId"));
 
                 if (dep == null) {
-                    department = isntantiateDepartment(rs);
-                    map.put(rs.getInt("DepartmentId"), department);
+                    dep = isntantiateDepartment(rs);
+                    map.put(rs.getInt("DepartmentId"), dep);
                 }
 
-                Seller obj = instatiateSeller(rs, department);
+                Seller obj = instatiateSeller(rs, dep);
                 list.add(obj);
             }
 
