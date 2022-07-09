@@ -26,5 +26,11 @@ public class Program2 {
         Department newDepartment = new Department(null,"Games");
         departmentDao.insert(newDepartment);
         System.out.println("Inserted! New id = " + newDepartment.getId());
+
+        System.out.println("\n====TEST 4: department update ====");
+        department = departmentDao.findById(6);
+        department.setName("Sports");
+        departmentDao.update(department);
+        System.out.println("Update Completed");
     }
 }
